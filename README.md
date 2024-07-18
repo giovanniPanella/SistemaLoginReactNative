@@ -5,16 +5,33 @@
 
 ## Como rodar o Projeto
 Instalar todas as dependencias indicada pelo package.json
+´´´
 ### npm install
+´´´
 Executar o projeto
+´´´
 ## npx expo Start
-
+´´´
 instalar a Dependencia para navegar entre Telas
+´´´
 ### npm install @react-navigation/native @react-navigation/native-stack
+´´´
+´´´
 ### npx expo install react-native-screens react-native-safe-area-context
-
+´´´
 Realizar chamada para API
+´´´
 ### npm install axios
-
+´´´
 Usar o YUP para Validar o Formulario
+´´´
 ### npm install yup
+´´´
+Tranforma o CSS em componentes
+´´´
+## npm install styled-components
+´´´
+Usando o Async para armazenar os dados
+´´´
+## npx expo install @react-native-async-storage/async-storage
+´´´

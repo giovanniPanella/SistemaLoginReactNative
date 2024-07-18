@@ -1,10 +1,10 @@
-import { Text, View, Image, TextInput, TouchableOpacity, StyleSheet, Alert,ScrollView } from 'react-native';
+import { Image,  Alert,ScrollView, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {useState} from 'react';
 import api from '../../config/api'
 import * as yup from 'yup'
-
-
+import {Container,Logo,InputForm,BtnSubmitForm,TxtSubmitForm,LinkNewUser,LoadingArea} from '../../styles/custom'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function Login() {
 
     // Navegar entre as telas
@@ -13,21 +13,30 @@ export default function Login() {
     // Armazenar as informações do usuário
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
+    const [loading, setLoading] = useState(false);
     // Processar/submeter os dados do formulário
     const loginSubmit = async() => {
         //{console.log(password,email)}
        // Alert.alert('', 'E-mail:'+ email);
         //Alert.alert('', 'Senha: '+ password);
     try{
+
+        setLoading(true)
         //validar com YUP
         await  validaticionSchema.validate(
             {email, password},{ abortEarly:false}
         )   
         await api.post('/login',{email,password})
         .then((response)=>{
-            Alert.alert("SUCESSO!",response.data.message)
-            console.log(response.data.message)
+            //salvando os dados
+            AsyncStorage.setItem('@token',response.data.user.token)
+            AsyncStorage.setItem('@name',response.data.user.name)
+            AsyncStorage.setItem('@email',response.data.user.email)
+            //redirecionar para Home
+            navigation.navigate('Home')
+
+            //Alert.alert("SUCESSO!",response.data.message)
+            //console.log(response.data.message)
         })
         .catch((erro)=>{
 
@@ -47,6 +56,8 @@ export default function Login() {
                     Alert.alert("OPS","Tente Novamente")
                     console.log("Tente Novamente")
                 }
+        } finally{
+            setLoading(false)
         }
 
     }
@@ -58,84 +69,51 @@ export default function Login() {
 
     return (
         <ScrollView contentContainerStyle={{flexGrow:1}}>
-        <View style={styles.container}>
-            <View style={styles.logo}>
+        <Container>
+            <Logo>
                 <Image source={require('../../../assets/images/tag.png')} />
-            </View>
+            </Logo>
 
-            <TextInput
-                style={styles.inputForm}
+            <InputForm
+                
                 placeholder='Usuário'
                 autoCorrect={false}
                 keyboardType='email-address'
                 autoCapitalize='none'
                 value={email}
+                editable = {!loading}
                 onChangeText={text => setEmail(text)}
             />
 
-            <TextInput
-                style={styles.inputForm}
+            <InputForm
                 placeholder='Senha'
                 autoCorrect={false}
                 secureTextEntry={true}
                 value={password}
+                editable = {!loading}
                 onChangeText={text => setPassword(text)}
             />
 
-            <TouchableOpacity style={styles.btnSubmitForm} onPress={loginSubmit}  >
+            <BtnSubmitForm disabled={loading} onPress={loginSubmit}  >
             
-                <Text style={styles.txtSubmitForm}>
+                <TxtSubmitForm>
                     Acessar
-                </Text>
-            </TouchableOpacity>
+                </TxtSubmitForm>
+            </BtnSubmitForm>
             
-            <Text style={styles.linkNewUser} onPress={() => navigation.navigate('NewUser')}>
+            <LinkNewUser onPress={() => navigation.navigate('NewUser')}>
                 Cadastrar
-            </Text>
+            </LinkNewUser>
 
-            <Text style={styles.linkNewUser} onPress={() => navigation.navigate('RecoverPassword')}>
+            <LinkNewUser onPress={() => navigation.navigate('RecoverPassword')}>
                 Recuperar Senha
-            </Text>
-
-        </View>
+            </LinkNewUser>
+             {loading && 
+        <LoadingArea>
+             <ActivityIndicator size="large" color='#f5f5f5'/>
+        </LoadingArea>
+        }  
+        </Container>
         </ScrollView>
     )
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#203C3F',
-    },
-    logo: {
-        paddingBottom: 20
-    },
-    inputForm: {
-        backgroundColor: '#f5f5f5',
-        width: '90%',
-        marginBottom: 15,
-        color: '#10101c',
-        fontSize: 18,
-        borderRadius: 20,
-        padding: 10,
-    },
-    btnSubmitForm: {
-        backgroundColor: '#1f51fe',
-        width: '90%',
-        height: 45,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 20,
-    },
-    txtSubmitForm: {
-        color: '#f5f5f5',
-        fontSize: 22,
-    },
-    linkNewUser: {
-        color: '#1f51fe',
-        marginTop: 10,
-        fontSize: 18
-    }
-});
