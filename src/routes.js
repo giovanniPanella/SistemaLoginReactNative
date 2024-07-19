@@ -22,7 +22,7 @@ export default function Routes() {
                 />
                 <Stack.Screen name='NewUser' component={NewUser} options={{headerShown: false }}  />
                 <Stack.Screen name='RecoverPassword' component={RecoverPassword} options={{headerShown: false }}  />
-                <Stack.Screen name='Home' component={Home} options={{headerShown: false }}  />
+                <Stack.Screen name='Home' component={Home} options={{headerShown: true }}  />
             </Stack.Navigator>
         </NavigationContainer>
     )

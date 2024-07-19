@@ -1,10 +1,25 @@
-import { Image,  Alert,ScrollView, ActivityIndicator } from 'react-native';
+// Incluir os componentes utilizado para estruturar o conteúdo
+import { Image,ActivityIndicator, Alert, ScrollView } from 'react-native';
+
+// Importar o arquivo com os componentes CSS
+import { Container, Logo, ImageLogo, InputForm, BtnSubmitForm, TxtSubmitForm, LinkNewUser, LoadingArea } from '../../styles/custom';
+
+// Incluir a função navegar entre as telas
 import { useNavigation } from '@react-navigation/native';
-import {useState} from 'react';
-import api from '../../config/api'
-import * as yup from 'yup'
-import {Container,Logo,InputForm,BtnSubmitForm,TxtSubmitForm,LinkNewUser,LoadingArea} from '../../styles/custom'
+
+// Incluir AsyncStorage para armazenar dados
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// useState - Adicionar estado ao componente
+import { useState } from 'react';
+
+// Arquivo com as configurações da API
+import api from '../../config/api';
+
+// Validar os dados do formulário
+import * as yup from 'yup';
+
+// Criar e exportar a função com a tela login 
 export default function Login() {
 
     // Navegar entre as telas
@@ -14,59 +29,68 @@ export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
     // Processar/submeter os dados do formulário
-    const loginSubmit = async() => {
-        //{console.log(password,email)}
-       // Alert.alert('', 'E-mail:'+ email);
-        //Alert.alert('', 'Senha: '+ password);
-    try{
+    const loginSubmit = async () => {
 
-        setLoading(true)
-        //validar com YUP
-        await  validaticionSchema.validate(
-            {email, password},{ abortEarly:false}
-        )   
-        await api.post('/login',{email,password})
-        .then((response)=>{
-            //salvando os dados
-            AsyncStorage.setItem('@token',response.data.user.token)
-            AsyncStorage.setItem('@name',response.data.user.name)
-            AsyncStorage.setItem('@email',response.data.user.email)
-            //redirecionar para Home
-            navigation.navigate('Home')
+        // Usar try e catch para gerenciar exceção/erro
+        try { // Permanece no try se não houver nenhum erro
 
-            //Alert.alert("SUCESSO!",response.data.message)
-            //console.log(response.data.message)
-        })
-        .catch((erro)=>{
+            // Alterar para TRUE e apresentar loading
+            setLoading(true);
 
-            if(erro.response){
-                Alert.alert("OPS",erro.response.data.message.toString())
-                console.log(erro.response.data.message)
-            }else{
-                Alert.alert("OPS","Tente Novamente!")
-                console.log("Tente Novamente!")
+            // Validar o formulário com Yup
+            await validationSchema.validate({ email, password }, { abortEarly: false });
+
+            // Requisição para a API indicando a rota e os dados
+            await api.post('/login', { email, password })
+                .then((response) => { // Acessar o then quando a API retornar status sucesso
+
+                    //console.log(response.data);
+                    // Salvar os dados no AsyncStorage
+                    AsyncStorage.setItem('@token', response.data.user.token);
+                    AsyncStorage.setItem('@name', response.data.user.name);
+                    AsyncStorage.setItem('@email', response.data.user.email);
+
+                    // Redirecionar para página inicial
+                    navigation.navigate('Home');
+
+                    // Alert.alert("Sucesso", response.data.message);
+
+                }).catch((err) => { // Acessar o catch quando a API retornar status erro
+
+                    //console.log(err.response.data.message.toString());            
+                    if (err.response) { // Acessa o IF quando a API retornar erro
+                        Alert.alert("Ops", err.response.data.message.toString());
+                    } else { // Acessa o ELSE quando a API não responder
+                        Alert.alert("Ops", "Erro: Tente novamente!");
+                    }
+
+                });
+        } catch (error) { // Acessa o catch quando houver erro no try
+
+            if (error.errors) { // Acessa o IF quando existir a mensagem de erro
+                Alert.alert("Ops", error.errors[0]);
+            } else { // Acessa o ELSE quando não existir a mensagem de erro
+                Alert.alert("Ops", "Erro: Tente novamente!");
             }
-        })
-        }catch(erro){
-            if(erro.errors){
-                Alert.alert("OPS",erro.errors[0])
-                console.log(erro.errors.toString())
-                }else{
-                    Alert.alert("OPS","Tente Novamente")
-                    console.log("Tente Novamente")
-                }
-        } finally{
-            setLoading(false)
-        }
 
+        } finally {
+
+            // Alterar para false e ocultar loading
+            setLoading(false);
+        }
     }
 
-    const  validaticionSchema = yup.object().shape({
-        email: yup.string("Erro! Colocar o Email").required("Erro! F Necessário Preencher o campo Email"),
-        password: yup.string("Erro! Colocar a Senha").required("Erro! F Necessário Preencher a Senha")
-    })
+    // Validar o formulário com Yup
+    const validationSchema = yup.object().shape({
+        email: yup.string("Erro: Necessário preencher o campo usuário!")
+            .required("Erro: Necessário preencher o campo usuário!"),
+        password: yup.string("Erro: Necessário preencher o campo senha!")
+            .required("Erro: Necessário preencher o campo senha!"),
+    });
 
+    
     return (
         <ScrollView contentContainerStyle={{flexGrow:1}}>
         <Container>
